@@ -23,6 +23,9 @@ const Auth: React.FunctionComponent<IAuthProps> = ({
   >(UserOperations.Mutations.createUsername);
 
   const onSubmit = async () => {
+    if (!username) return;
+
+    console.log("CREATEUESRNAME DATA", data, loading, error);
     try {
       //createUsername mutation to send our username to the GraphQL API
       await createUsername({
