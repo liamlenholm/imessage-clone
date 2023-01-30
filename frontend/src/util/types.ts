@@ -20,4 +20,5 @@ export interface CreateUsernameVariables {
   export interface SearchedUser {
     id: string;
     username: string;
+    image: string;
   }
