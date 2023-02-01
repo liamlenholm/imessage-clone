@@ -7,14 +7,22 @@ import typeDefs from './graphql/typeDefs';
 import resolvers from './graphql/resolvers';
 import * as dotenv from "dotenv";
 import { getSession } from "next-auth/react"
-import { GraphQLContext } from './util/types';
+import { GraphQLContext, subscriptionContext } from './util/types';
 import { PrismaClient } from "@prisma/client"
 import { Session } from './util/types';
+import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { PubSub } from 'graphql-subscriptions';
 
 async function main() {
   dotenv.config();
   const app = express();
   const httpServer = http.createServer(app);
+
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: '/graphql/subscriptions',
+  });
 
   const schema = makeExecutableSchema({
     typeDefs,
@@ -22,6 +30,26 @@ async function main() {
   })
 
   const prisma = new PrismaClient();
+  const pubsub = new PubSub();
+
+
+  const serverCleanup = useServer(
+    { 
+      schema, 
+      context: async (ctx: subscriptionContext): Promise<GraphQLContext> => {
+        if (ctx.connectionParams && ctx.connectionParams.session) {
+          const {session} = ctx.connectionParams;
+
+          return { session, prisma, pubsub };
+        }
+
+        return {session: null, prisma, pubsub};
+    },
+  }, 
+  wsServer
+  );
+
+
 
   const corsOptions = {
     origin: process.env.CLIENT_ORIGIN,
@@ -37,9 +65,24 @@ async function main() {
       const session = (await getSession({ req })) as Session;
       
 
-      return { session, prisma };
+      return { session, prisma, pubsub };
     },
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer }), ApolloServerPluginLandingPageLocalDefault({ embed: true })],
+    plugins: [
+      // Proper shutdown for the HTTP server.
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+  
+      // Proper shutdown for the WebSocket server.
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose();
+            },
+          };
+        },
+      },
+      ApolloServerPluginLandingPageLocalDefault({ embed: true }),
+    ],
   });
   await server.start();
   server.applyMiddleware({ app, cors: corsOptions});
