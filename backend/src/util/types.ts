@@ -16,7 +16,7 @@ export interface Session {
   expires: ISODateString;
 }
 
-export interface subscriptionContext extends Context {
+export interface SubscriptionContext extends Context {
   connectionParams: {
     session?: Session;
   }
