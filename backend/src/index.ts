@@ -7,7 +7,7 @@ import typeDefs from './graphql/typeDefs';
 import resolvers from './graphql/resolvers';
 import * as dotenv from "dotenv";
 import { getSession } from "next-auth/react"
-import { GraphQLContext, subscriptionContext } from './util/types';
+import { GraphQLContext, SubscriptionContext } from './util/types';
 import { PrismaClient } from "@prisma/client"
 import { Session } from './util/types';
 import { WebSocketServer } from 'ws';
@@ -36,7 +36,7 @@ async function main() {
   const serverCleanup = useServer(
     { 
       schema, 
-      context: async (ctx: subscriptionContext): Promise<GraphQLContext> => {
+      context: async (ctx: SubscriptionContext): Promise<GraphQLContext> => {
         if (ctx.connectionParams && ctx.connectionParams.session) {
           const {session} = ctx.connectionParams;
 
