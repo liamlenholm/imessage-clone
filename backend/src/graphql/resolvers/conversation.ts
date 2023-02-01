@@ -50,7 +50,7 @@ const resolvers = {
         createConversation: async (_: any, args: {participantIds: Array<string> }, context: GraphQLContext): Promise<{conversationId: string}> => {
 
             const {participantIds} = args;
-            const {session, prisma} = context;
+            const {session, prisma, pubsub} = context;
 
             if (!session?.user) {
                 throw new ApolloError("Not Authorized!;")
@@ -73,6 +73,10 @@ const resolvers = {
                     },
                     include: conversationPopulated,
                 });
+
+                pubsub.publish("CONVERSATION_CREATED", {
+                    conversationCreated: conversation,
+                });
  
                 return {
                     conversationId: conversation.id,
@@ -84,6 +88,16 @@ const resolvers = {
 
         },
     },
+
+    Subscription: {
+        conversationCreated: {
+            subscribe: (_: any, __: any, context: GraphQLContext) => {
+                const { pubsub } = context;
+
+                return pubsub.asyncIterator(["CONVERSATION_CREATED"]);
+            }
+        }
+    }
 }
 
 export const participantPopulated = Prisma.validator<Prisma.ConversationParticipantInclude>()({
@@ -95,20 +109,21 @@ export const participantPopulated = Prisma.validator<Prisma.ConversationParticip
     },
 })
 
-export const conversationPopulated = Prisma.validator<Prisma.ConversationInclude>()({
+export const conversationPopulated =
+  Prisma.validator<Prisma.ConversationInclude>()({
     participants: {
-        include: participantPopulated,
-        
+      include: participantPopulated,
     },
     latestMessage: {
-        include: {
-            sender: {
-                select: {
-                    id: true,
-                    username: true,
-                },
-            },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            username: true,
+          },
         },
+      },
     },
-})
+  });
+
 export default resolvers;

@@ -31,6 +31,10 @@ const typeDefs = gql`
     type Query {
         conversations: [Conversation]
     }
+
+    type Subscription {
+        conversationCreated: Conversation
+    }
 `;
 
 export default typeDefs;
