@@ -6,6 +6,7 @@ import ConversationOperations from "@/src/graphql/operations/conversation";
 import { ConversationsData } from "@/src/util/types";
 import { ConversationPopulated } from "@/../backend/src/util/types";
 import { useEffect } from "react";
+import { useRouter } from "next/router";
 
 interface ConversationsWrapperProps {
   session: Session;
@@ -23,7 +24,18 @@ const ConversationsWrapper: React.FC<ConversationsWrapperProps> = ({
     ConversationOperations.Queries.conversations
   );
 
-  console.log("query data", conversationsData);
+  const router = useRouter();
+  const {
+    query: { conversationId },
+  } = router;
+
+  const onViewConversation = async (conversationId: string) => {
+    //Push the conversationId to the router query params
+
+    router.push({ query: { conversationId } });
+
+    //Mark the conversation as read
+  };
 
   const subscribeToNewConversations = () => {
     subscribeToMore({
@@ -42,8 +54,6 @@ const ConversationsWrapper: React.FC<ConversationsWrapperProps> = ({
 
         const newConversation = subscriptionData.data.conversationCreated;
 
-        console.log("here is subscriptiondata", subscriptionData);
-
         return Object.assign({}, prev, {
           conversations: [newConversation, ...prev.conversations],
         });
@@ -56,10 +66,17 @@ const ConversationsWrapper: React.FC<ConversationsWrapperProps> = ({
   }, []);
 
   return (
-    <Box width={{ base: "100%", md: "400px" }} bg="whiteAlpha.50" py={6} px={3}>
+    <Box
+      display={{ base: conversationId ? "none" : "flex", md: "flex" }}
+      width={{ base: "100%", md: "400px" }}
+      bg="whiteAlpha.50"
+      py={6}
+      px={3}
+    >
       <ConversationList
         session={session}
         conversations={conversationsData?.conversations || []}
+        onViewConversation={onViewConversation}
       />
     </Box>
   );
