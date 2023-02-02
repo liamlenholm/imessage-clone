@@ -1,11 +1,18 @@
-import { useQuery } from "@apollo/client";
-import { Box } from "@chakra-ui/react";
+import { gql, useMutation, useQuery, useSubscription } from "@apollo/client";
+import { Box, Button } from "@chakra-ui/react";
 import { Session } from "next-auth";
 import ConversationList from "./ConversationList";
-import ConversationOperations from "@/src/graphql/operations/conversation";
-import { ConversationsData } from "@/src/util/types";
-import { ConversationPopulated } from "@/../backend/src/util/types";
-import { useEffect } from "react";
+import ConversationOperations from "../../../graphql/operations/conversation";
+import {
+  ConversationDeletedData,
+  ConversationsData,
+  ConversationUpdatedData,
+} from "../../../util/types";
+import {
+  ConversationPopulated,
+  ParticipantPopulated,
+} from "../../../../../backend/src/util/types";
+import { cache, useEffect } from "react";
 import { useRouter } from "next/router";
 
 interface ConversationsWrapperProps {
@@ -28,6 +35,9 @@ const ConversationsWrapper: React.FC<ConversationsWrapperProps> = ({
   const {
     query: { conversationId },
   } = router;
+  const {
+    user: { id: userId },
+  } = session;
 
   const onViewConversation = async (conversationId: string) => {
     //Push the conversationId to the router query params
@@ -51,9 +61,7 @@ const ConversationsWrapper: React.FC<ConversationsWrapperProps> = ({
         }
       ) => {
         if (!subscriptionData.data) return prev;
-
         const newConversation = subscriptionData.data.conversationCreated;
-
         return Object.assign({}, prev, {
           conversations: [newConversation, ...prev.conversations],
         });
