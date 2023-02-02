@@ -30,6 +30,6 @@ const link = typeof window !== "undefined" && wsLink != null ? split(
   ) : httpLink;
 
 export const client = new ApolloClient({
-    link,
-    cache: new InMemoryCache(),
+  link,
+  cache: new InMemoryCache(),
 });

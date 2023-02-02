@@ -17,6 +17,7 @@ import { BiLogOut } from "react-icons/bi";
 import { AiOutlineEdit } from "react-icons/ai";
 import { formatUsernames } from "../../../util/functions";
 import { ConversationPopulated } from "../../../../../backend/src/util/types";
+import user from "@/src/graphql/operations/user";
 
 const formatRelativeLocale = {
   lastWeek: "eeee",
@@ -30,6 +31,7 @@ interface ConversationItemProps {
   conversation: ConversationPopulated;
   onClick: () => void;
   isSelected: Boolean;
+  image: string;
   // onEditConversation?: () => void;
   // hasSeenLatestMessage?: boolean;
   // selectedConversationId?: string;
@@ -42,6 +44,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   conversation,
   onClick,
   isSelected,
+  image,
   // selectedConversationId,
   // hasSeenLatestMessage,
   // onEditConversation,
@@ -112,7 +115,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
           <GoPrimitiveDot fontSize={18} color="#6B46C1" />
         )}
       </Flex> */}
-      <Avatar />
+      <Avatar src={image} />
       <Flex justify="space-between" width="80%" height="100%">
         <Flex direction="column" width="70%" height="100%">
           <Text

@@ -24,7 +24,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
 
   const router = useRouter();
   const {
-    user: { id: userId },
+    user: { id: userId, image },
   } = session;
 
   const sortedConversations = [...conversations].sort(
@@ -52,6 +52,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
         <ConversationItem
           key={conversation.id}
           userId={userId}
+          image={image || ""}
           conversation={conversation}
           onClick={() => onViewConversation(conversation.id)}
           isSelected={conversation.id === router.query.conversationId}
